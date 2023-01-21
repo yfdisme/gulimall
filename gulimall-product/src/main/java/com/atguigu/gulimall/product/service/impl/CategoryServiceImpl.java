@@ -1,7 +1,11 @@
 package com.atguigu.gulimall.product.service.impl;
 
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -26,4 +30,33 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return new PageUtils(page);
     }
 
+    @Override
+    public List<CategoryEntity> tree() {
+        List<CategoryEntity> categoryEntities = baseMapper.selectList(null);
+        List<CategoryEntity> collect = categoryEntities.stream()
+                .filter(categoryEntity ->
+                        categoryEntity.getParentCid() == 0L)
+                .map((menu) -> {
+                    menu.setTreeList(chidMenu(menu, categoryEntities));
+                    return menu;
+                }).sorted((menu1, menu2) ->
+                        (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort())
+                ).collect(Collectors.toList());
+        return collect;
+    }
+
+    public List<CategoryEntity> chidMenu(CategoryEntity menu, List<CategoryEntity> all) {
+        List<CategoryEntity> collect = all.stream()
+                .filter(item -> {
+                    return item.getParentCid() == menu.getCatId();
+                })
+                .map(item -> {
+                            item.setTreeList(chidMenu(item, all));
+                            return item;
+                        }
+                ).sorted((menu1, menu2) ->
+                        (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort())
+                ).collect(Collectors.toList());
+        return collect;
+    }
 }
