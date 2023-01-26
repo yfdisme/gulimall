@@ -2,6 +2,7 @@ package com.atguigu.gulimall.product.service.impl;
 
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -58,5 +59,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                         (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort())
                 ).collect(Collectors.toList());
         return collect;
+    }
+
+    @Override
+    public void deleteByIds(Long[] catIds) {
+        List<Long> ids = Arrays.asList(catIds);
+        baseMapper.deleteBatchIds(ids);
     }
 }
